@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHOKX TUCK SHOP</title>
+
+<style>
+body { font-family: Arial; background:#f4f4f8; padding:20px; }
+
+h1 { text-align:center; }
+
+.store {
+  display:flex;
+  flex-wrap:wrap;
+  gap:15px;
+  justify-content:center;
+}
+
+.product {
+  background:#fff;
+  padding:14px;
+  border-radius:16px;
+  width:220px;
+  text-align:center;
+  box-shadow:0 12px 35px rgba(0,0,0,0.08);
+}
+
+.product img {
+    width:100%;
+    height:160px;
+    object-fit:cover;
+    border-radius:10px;
+    background:#f7f7f7;
+  }
+
+  .product h3 {
+    font-size:1rem;
+    margin:12px 0 8px;
+    line-height:1.3;
+    min-height:3.6rem;
+  }
+
+  .product .price {
+    font-size:1.05rem;
+    font-weight:700;
+    margin:10px 0;
+    color:#0c3f80;
+  }
+
+  .product .actions {
+    display:flex;
+    justify-content:center;
+  }
+
+  .product .actions button {
+    width:100%;
+  }
+
+  .box {
+    background:#fff;
+    padding:20px;
+    margin:15px auto;
+    max-width:500px;
+    border-radius:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.04);
+  }
+button {
+  padding:8px 12px;
+  margin:5px;
+  background:#007bff;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+button:hover { background:#0056d2; }
+
+input, textarea {
+  width:100%;
+  padding:8px;
+  margin-top:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+.search-box {
+  max-width:500px;
+  margin:0 auto 20px;
+}
+
+.search-box input {
+  font-size:16px;
+  padding:12px;
+}
+
+.search-box select {
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+
+.product .category {
+  color:#555;
+  font-size:0.9rem;
+  margin:6px 0 4px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🛒 CHOKX TUCK SHOP</h1>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="🔍 Search products or needs..." onkeyup="searchProducts()">
+  <select id="categorySelect" onchange="searchProducts()"></select>
+</div>
+
+<div class="store" id="products"></div>
+
+<!-- CART -->
+<div class="box">
+<h2>Cart</h2>
+<div id="cart"></div>
+<p><strong>Total: R<span id="total">0</span></strong></p>
+<button onclick="checkout()">Checkout</button>
+</div>
+
+<!-- CHECKOUT -->
+<div class="box" id="checkoutBox" style="display:none;">
+<h2>Checkout</h2>
+
+<input id="name" placeholder="Name">
+<input id="email" placeholder="Email">
+<input id="phone" placeholder="WhatsApp number">
+<textarea id="address" placeholder="Delivery address"></textarea>
+
+<button onclick="placeOrder()">Place Order</button>
+</div>
+
+<!-- PAYMENT -->
+<div class="box" id="paymentBox" style="display:none;"></div>
+
+<!-- EMAIL FORM -->
+<form id="orderForm" action="https://formsubmit.co/molokocedrick8@gmail.com" method="POST" style="display:none;">
+<input type="hidden" name="message" id="message">
+<input type="hidden" name="_subject" value="New Order">
+<input type="hidden" name="_captcha" value="false">
+</form>
+
+<script>
+const products = [
+  {name:'Five Roses Loose Leaf Tea Blend', price:18, category:'', img:'Five Roses Loose Leaf Tea Blend.png'},
+  {name:'JOKO STRONG QUALITY TEA Loose Leaf African Blend', price:18, category:'', img:'JOKO STRONG QUALITY TEA Loose Leaf African Blend.png'},
+  {name:'FG RICH AND STRONG', price:18, category:'', img:'FG RICH AND STRONG.png'},
+  {name:'TREKKER MIXTURE', price:15, category:'', img:'TREKKER MIXTURE.png'},
+  {name:'IMBO RED SPECKLED BEANS (500g)', price:35, category:'', img:'IMBO RED SPECKLED BEANS.png'},
+  {name:'Selati GOLDEN BROWN SUGAR (1kg)', price:26, category:'', img:'Selati GOLDEN BROWN SUGAR.png'},
+  {name:'SHIRAZ BROWN SUGAR (500g)', price:16, category:'', img:'SHIRAZ BROWN SUGAR.png'},
+  {name:'CROWN IODATED TABLE SALT (500g)', price:6, category:'', img:'CROWN IODATED TABLE SALT.png'},
+  {name:'ILLOVO WHITE SUGAR (500g)', price:16, category:'', img:'ILLOVO WHITE SUGAR.png'},
+  {name:'ECONO WHITE SUGAR (2.5kg)', price:60, category:'', img:'ECONO WHITE SUGAR.png'},
+  {name:'Vicks Vapo Rub (10g) Each', price:10, category:'', img:'Vicks Vapo Rub.png'},
+  {name:'MED-LEMON (500mg) Each ', price:10, category:'', img:'MED-LEMON.png'},
+  {name:'DISPRIN (500mg) Each', price:5, category:'', img:'DISPRIN.png'},
+  {name:'GRAND-PA (500mg) Each', price:5, category:'', img:'GRAND-PA.png'},
+  {name:'ROBERTSONS PERI PERI (7g) Each', price:5, category:'', img:'ROBERTSONS PERI PERI.png'},
+  {name:'ROBERTSONS Rajah MILD & SPICY (7g) Each', price:5, category:'', img:'ROBERTSONS Rajah MILD & SPICY.png'},
+  {name:'ROBERTSONS Rajah MEDIUM (7g) Each', price:5, category:'', img:'ROBERTSONS Rajah MEDIUM.png'},
+  {name:'ROBERTSONS Rajah FLAVOURFUL & MILD (7g) Each', price:5, category:'', img:'ROBERTSONS Rajah FLAVOURFUL & MILD.png'},
+  {name:'ROBERTSONS BICARBONATE OF SODA (14g) Each', price:5, category:'', img:'ROBERTSONS BICARBONATE OF SODA.png'},
+  {name:'ROBERTSONS SPICY CHICKEN (7g) Each', price:5, category:'', img:'ROBERTSONS SPICY CHICKEN.png'},
+  {name:'ROBERTSONS SPICY BARBECUE (7g) Each', price:5, category:'', img:'ROBERTSONS SPICY BARBECUE.png'},
+  {name:'BENNY (17g) Each', price:5, category:'', img:'BENNY.png'},
+  {name:'ROYAL BAKING POWDER (50g) Each', price:15, category:'', img:'ROYAL BAKING POWDER.png'},
+  {name:'CROSSE & BLACKWELLTANGY MAYONNAISE (250g)', price:27, category:'', img:'CROSSE & BLACKWELLTANGY MAYONNAISE.png'},
+  {name:'Knoss MINESTRONE SOUP Each', price:7, category:'', img:'Knoss MINESTRONE SOUP.png'},
+  {name:'CROSSE & BLACKWELLTANGY MAYONNAISE (750g)', price:45, category:'', img:'CROSSE & BLACKWELLTANGY MAYONNAISE (750g).png'},
+  {name:'LIGHTHOUSE SPECIAL Each', price:7, category:'', img:'LIGHTHOUSE SPECIAL.png'},
+  {name:'Protex MEN (175g) Each', price:15, category:'', img:'Protex MEN.png'},
+  {name:'Sunlight SOAP (250g)', price:15, category:'', img:'Sunlight SOAP.png'},
+  {name:'PLAYBOY ROLL-ON BLACK GOLD Each', price:20, category:'', img:'PLAYBOY ROLL-ON BLACK GOLD.png'},
+  {name:'COLGATE MAXIMUM CAVITY PROTECTION', price:25, category:'', img:'COLGATE MAXIMUM CAVITY PROTECTION.png'},
+  {name:'VASELINE BLUESEAL(50ml)', price:15, category:'', img:'VASELINE BLUESEAL.png'},
+  {name:'VASELINE BLUESEAL (100ml)', price:20, category:'', img:'VASELINE BLUESEAL (100ml).png'},
+  {name:'DOOM MOSQUITO COILS', price:15, category:'', img:'DOOM MOSQUITO COILS.png'},
+  {name:'DOOM Multi INSECT Odourless (180ml) Each', price:27, category:'', img:'DOOM Multi INSECT Odourless.png'},
+  {name:'ALL GOLD TOMATO SAUCE (350ml)', price:31, category:'', img:'ALL GOLD TOMATO SAUCE.png'},
+  {name:'ALL GOLD TOMATO SAUCE(750ml)', price:39, category:'', img:'ALL GOLD TOMATO SAUCE(750ml).png'},
+  {name:'SPIRIT VINEGAR WHITE (375ml)', price:10, category:'', img:'SPIRIT VINEGAR WHITE.png'},
+  {name:'PAN (375ml)', price:22, category:'', img:'PAN (375ml).png'},
+  {name:'Clover ULTRA (500ml)', price:15, category:'', img:'Clover ULTRA (500ml).png'},
+  {name:'Clover ULTRA (1L)', price:23, category:'', img:'Clover ULTRA (1L).png'},
+  {name:'FUSION (1L)', price:15, category:'', img:'FUSION (1L).png'},
+  {name:'TAXI', price:15, category:'', img:'TAXI.png'},
+  {name:'NTSU', price:13, category:'', img:'NTSU.png'},
+  {name:'SHIBOBO', price:2, category:'', img:'SHIBOBO.png'},
+  {name:'SOFTY MARBLE CAKE', price:3, category:'', img:'SOFTY MARBLE CAKE.png'},
+  {name:'SOFTY CHOCOLATE CAKE', price:3, category:'', img:'SOFTY CHOCOLATE CAKE.png'},
+  {name:'SOFTY LIME & ORANGE CAKE', price:3, category:'', img:'SOFTY LIME & ORANGE CAKE.png'},
+  {name:'MAMAS CHEESE POPS', price:1, category:'', img:'MAMAS CHEESE POPS.png'},
+  {name:'MAMAS POPT CORN', price:1, category:'', img:'MAMAS POPT CORN.png'},
+  {name:'CHIPPA SWEET TOMATO Each', price:5, category:'', img:'CHIPPA SWEET TOMATO.png'},
+  {name:'CHIPPA BBQNAKS', price:5, category:'', img:'CHIPPA BBQNAKS.png'},
+  {name:'CHIPPA CHEESE &  ONION Each', price:5, category:'', img:'CHIPPA CHEESE &  ONION.png'},
+  {name:'TOMATO 4 FOR', price:10, category:'Fresh Produce', img:'TOMATO 4 FOR.png'},
+  {name:'GLUCOSE BISCUITS Each', price:1, category:'', img:'GLUCOSE BISCUITS.png'},
+  {name:'SINGLE PLY', price:5, category:'', img:'SINGLE PLY.png'},
+  {name:'10 SINGLE PLY', price:40, category:'', img:'10 SINGLE PLY.png'},
+  {name:'MAQ WASHING POWDER (500g)', price:25, category:'', img:'MAQ WASHING POWDER (500g).png'},
+  {name:'MAQ WASHING POWDER (1kg)', price:40, category:'', img:'MAQ WASHING POWDER (1kg).png'},
+  {name:'KIWI RENEWS BLACK LEATHER', price:18, category:'', img:'KIWI RENEWS BLACK LEATHER.png'},
+  {name:'PARROT METHYLATED SPIRITS', price:10, category:'', img:'PARROT METHYLATED SPIRITS.png'},
+  {name:'BRITISH TECHNOLOGY', price:20, category:'', img:'BRITISH TECHNOLOGY.png'},
+  {name:'SUNLIGHT DISHWASHING LIQUID (400ml)', price:30, category:'', img:'SUNLIGHT DISHWASHING LIQUID (400ml).png'},
+  {name:'SUNLIGHT DISHWASHING LIQUID (750ml)', price:35, category:'', img:'SUNLIGHT DISHWASHING LIQUID (750ml).png'},
+  {name:'LUCKY STAR (155g)', price:16, category:'', img:'LUCKY STAR (155g).png'},
+  {name:'LUCKY STAR TOMATO(155g)', price:16, category:'', img:'LUCKY STAR TOMATO(155g).png'},
+  {name:'LUCKY STAR (215g)', price:20, category:'', img:'LUCKY STAR (215g).png'},
+  {name:'LUCKY STAR PERI-PERI(400g)', price:28, category:'', img:'LUCKY STAR PERI-PERI(400g).png'},
+  {name:'LUCKY STAR TOMATO(400g)', price:28, category:'', img:'LUCKY STAR TOMATO(400g).png'},
+  {name:'KOO BEANS (400g)', price:20, category:'', img:'KOO BEANS (400g).png'},
+  {name:'SUPA STAR MALA (1kg)', price:16, category:'', img:'SUPA STAR MALA.png'},
+  {name:'GOLDI CHICKEN NECKS (1kg)', price:32, category:'', img:'GOLDI CHICKEN NECKS (1kg).png'},
+  {name:'GOLDI CHICKEN SOUP PACK (1kg)', price:30, category:'', img:'GOLDI CHICKEN SOUP PACK (1kg).png'},
+  {name:'GOLDI CHICKEN HEADS & FEET(1kg)', price:25, category:'', img:'GOLDI CHICKEN HEADS & FEET(1kg).png'},
+  {name:'2L STONEY', price:26, category:'', img:'2L STONEY.png'},
+  {name:'2.25L COCA COLA', price:28, category:'', img:'2.25L COCA COLA.png'},
+  {name:'1.5L COCA COLA', price:15, category:'', img:'1.5L COCA COLA.png'},
+  {name:'2L KINGSLEY', price:15, category:'', img:'2L KINGSLEY.png'},
+  {name:'1.5L FANTA, CAPPY, TWIST, SPRITE &STONEY Each', price:15, category:'', img:'1.5L FANTA, CAPPY, TWIST, SPRITE &STONEY.png'},
+  {name:'ECONO SAMP (5kg)', price:60, category:'', img:'ECONO SAMP.png'},
+  {name:'ECONO RICE (5kg)', price:70, category:'', img:'ECONO RICE (5kg).png'},
+  {name:'ECONO SUPER MAIZE MEAL(5kg)', price:55, category:'', img:'ECONO SUPER MAIZE MEAL.png'},
+  {name:'ECONO SUPER MAIZE MEAL(12.5kg)', price:135, category:'', img:'ECONO SUPER MAIZE MEAL(12.5kg).png'},
+  {name:'ENERGY DRINKS', price:12, category:'', img:'ENERGY DRINKS.png'},
+  {name:'CAESAR BLUE OR DERBY', price:20, category:'', img:'CAESAR BLUE OR DERBY.png'},
+  {name:'EGGS(60)', price:150, category:'Fresh Produce', img:'EGGS(60).png'},
+  {name:'SCHWEPPES (1L)', price:20, category:'', img:'SCHWEPPES (1L).png'},
+  {name:'MAGNIFISAN SUPER MAIZE MEAL(15kg)', price:170, category:'', img:'MAGNIFISAN SUPER MAIZE MEAL(15kg).png'},
+  {name:'2L SPRITE', price:25, category:'', img:'2L SPRITE.png'},
+  {name:'2L TWIST', price:25, category:'', img:'2L TWIST.png'},
+  {name:'ACHAAR SMALL', price:10, category:'', img:'ACHAAR SMALL.png'},
+  {name:'BULL BRAND CORNED MEAT', price:30, category:'', img:'BULL BRAND CORNED MEAT.png'},
+  {name:'1 ONION', price:5, category:'Fresh Produce', img:'1 ONION.png'}
+];
+
+function getCategory(name){
+  const lower = name.toLowerCase();
+
+  if(/\b(tea|coca cola|sprite|stoney|fanta|cappy|twist|energy drinks|energy drink|schweppes|taxi|ntsu|shibobo|fusion|caesar blue|derby|juice|malt)\b/.test(lower)){
+    return 'Beverages';
+  }
+
+  if(/\b(sugar|salt|vinegar|baking powder|maize meal|mala|samp|rice|beans|tomato sauce|mayonnaise|spirit vinegar|pan|ketchup|corned meat|tangy mayonnaise|margarine|soup|bulk|eggs)\b/.test(lower)){
+    return 'Staples & Condiments';
+  }
+
+  if(/\b(lucky star|koo beans|bull brand|canned|tomato|mayonnaise|soup|corned meat)\b/.test(lower)){
+    return 'Canned & Sauces';
+  }
+
+  if(/\b(robertsons|benny|peri peri|barbecue|spicy|bicarbonate|tangy|mayonnaise)\b/.test(lower)){
+    return 'Seasonings & Spices';
+  }
+
+  if(/\b(cake|chips|mamas|popcorn|glucose|softy|chippa|biscuit)\b/.test(lower)){
+    return 'Snacks';
+  }
+
+  if(/\b(vicks|disprin|med-lemon|grand-pa|protex|colgate|vaseline|playboy roll-on|sunlight soap)\b/.test(lower)){
+    return 'Health & Personal Care';
+  }
+
+  if(/\b(soap|washing powder|dishwashing|doom|insect|coils|single ply|toilet paper|methylated spirits|shoe polish|parrot meth)\b/.test(lower)){
+    return 'Home & Cleaning';
+  }
+
+  if(/\b(chicken|heads & feet|neck|soup pack|goldi)\b/.test(lower)){
+    return 'Meat & Poultry';
+  }
+
+  if(/\b(onion|tomato|eggs)\b/.test(lower)){
+    return 'Fresh Produce';
+  }
+
+  return 'General';
+}
+
+products.forEach(p => {
+  p.category = getCategory(p.name);
+});
+
+const categories = ["All Needs", ...new Set(products.map(p => p.category))];
+
+let cart = [];
+
+function loadProducts(filteredProducts = products){
+  const div = document.getElementById("products");
+  div.innerHTML = "";
+
+  filteredProducts.forEach((p,i)=>{
+    const originalIndex = products.indexOf(p);
+    const imageUrl = p.img || 'https://via.placeholder.com/260x160?text=No+Image';
+
+    div.innerHTML += `
+      <div class="product">
+        <img src="${imageUrl}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/260x160?text=No+Image'">
+        <h3>${p.name}</h3>
+        <p class="category">${p.category || 'General'}</p>
+        <p class="price">R${p.price.toFixed(2)}</p>
+        <div class="actions">
+          <button onclick="add(${originalIndex})">Add</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function populateCategorySelect(){
+  const select = document.getElementById("categorySelect");
+  select.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join("");
+}
+
+function searchProducts(){
+  const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+  const selectedCategory = document.getElementById("categorySelect").value;
+
+  const filtered = products.filter(p => {
+    const matchesName = p.name.toLowerCase().includes(searchTerm);
+    const matchesCategory = p.category.toLowerCase().includes(searchTerm);
+    const categoryFilter = selectedCategory === "All Needs" || p.category === selectedCategory;
+    return categoryFilter && (matchesName || matchesCategory);
+  });
+
+  loadProducts(filtered);
+}
+
+function add(i){
+  const item = products[i];
+  const existing = cart.find(p => p.name === item.name);
+
+  if(existing){
+    existing.qty++;
+  } else {
+    cart.push({...item, qty:1});
+  }
+
+  renderCart();
+}
+
+function renderCart(){
+  let html="";
+  let total=0;
+
+  cart.forEach((p,i)=>{
+    total += p.price * p.qty;
+
+    html += `
+      <strong>${p.name}</strong><br>
+      Qty:
+      <button onclick="changeQty(${i},-1)">-</button>
+      ${p.qty}
+      <button onclick="changeQty(${i},1)">+</button>
+
+      <br>
+      Subtotal: R${p.price * p.qty}
+      <button onclick="removeItem(${i})">Remove</button>
+      <hr>
+    `;
+  });
+
+  document.getElementById("cart").innerHTML = html;
+  document.getElementById("total").innerText = total;
+}
+
+function changeQty(i,val){
+  cart[i].qty += val;
+  if(cart[i].qty <= 0) cart.splice(i,1);
+  renderCart();
+}
+
+function removeItem(i){
+  cart.splice(i,1);
+  renderCart();
+}
+
+function checkout(){
+  document.getElementById("checkoutBox").style.display="block";
+}
+
+function placeOrder(){
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const phone = document.getElementById("phone").value;
+  const address = document.getElementById("address").value;
+
+  if(!name || !email || !address){
+    alert("Fill all fields");
+    return;
+  }
+
+  const orderID = "ORD-"+Date.now();
+  const total = cart.reduce((s,i)=>s + (i.price*i.qty),0);
+
+  const orderText = cart.map(i =>
+    `${i.name} x${i.qty} - R${i.price*i.qty}`
+  ).join("\n");
+
+  // EMAIL TO YOU
+  document.getElementById("message").value =
+`Order ID: ${orderID}
+
+Name: ${name}
+Email: ${email}
+Address: ${address}
+whatsapp: ${phone}
+
+${orderText}
+
+Total: R${total}`;
+
+  document.getElementById("orderForm").submit();
+
+  // WHATSAPP
+  const msg = encodeURIComponent(
+`🛒 Order ${orderID}
+${name}
+${address}
+
+${orderText}
+
+Total: R${total}`
+  );
+
+  window.open(`https://wa.me/27633954302?text=${msg}`);
+
+  // PAYMENT BOX
+  document.getElementById("paymentBox").style.display="block";
+  document.getElementById("paymentBox").innerHTML = `
+    <h3>💳 Payment Instructions</h3>
+    <p><strong>Order ID:</strong> ${orderID}</p>
+    <p>Bank: Capitec</p>
+    <p>Account: 1639629090</p>
+    <p>Reference: ${orderID}</p>
+
+    <button onclick="sendWhatsApp('${orderID}','${name}','${address}')">
+      📲 Send Order via WhatsApp
+    </button>
+
+    <h3>📤 Proof of Payment</h3>
+    <input type="file">
+  `;
+
+  alert("Order placed!");
+}
+
+function sendWhatsApp(orderID,name,address){
+  const msg = encodeURIComponent(
+`Order ${orderID}
+${name}
+${address}
+
+Please confirm payment.`
+  );
+
+  window.open(`https://wa.me/0633954302?text=${msg}`);
+}
+
+populateCategorySelect();
+loadProducts();
+</script>
+
+</body>
+</html>
